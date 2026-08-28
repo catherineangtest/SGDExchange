@@ -1,0 +1,6 @@
+{
+  "name": "SGD Exchange",
+  "description": "Real-time Singapore Dollar (SGD) currency exchange dashboard, converter, historical rate analysis, and rate alerts management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

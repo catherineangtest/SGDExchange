@@ -1,0 +1,338 @@
+import { CurrencyItem, AlertItem, ConversionRecord } from '../types';
+
+export const SINGAPORE_FLAG_URL =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuD4yTIReIsIMp1KY1MIxNcpLQR182ej6s3ddEi-KlOPOw3UUUzoF3grnXLm5xWS5K4Qz2l2UfL6ak-Ae-W0eR6dC1TYXYNUlnzhWxNZb-InvHpqK2meE1am-BBTYxckplyNMlea6uF5VaLgByUytiGCUEwXeUoXbTjf--eSmW87b-Et-BAFHr3HxFOVg_Jocwx4CQISUUo7KebVkCIf622ZS6aaRDXH-kTU_1dGhQlHZ75VNkCnRYGi4Q';
+
+export const US_FLAG_URL =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuAA2riHOus6M_xTneQ04JAFovwkOkP0EFEV4ZwuRDVmRdXGj4t7J1AvPvQa7xTtqignMXSXzJ2-wb8kYOo4bxZRf8NhFFj8xpHorx6c9Bsk67Ljkd3niHhNlIrGBx7ZrytUIpjT2Bu_5OHO9MOAeSolPWSKzqdCGGGmEdoKRJkrRnaqdKUcth9_6n25atjzwP9O7xkllVesrndDHW-84DGefCLc1XlQkgdQSc5h5GEccRudclqoIb0cQA';
+
+// Generate continuous smooth curve points for 30 and 90 days
+function generateHistoricalRates(baseRate: number, days: number, volatility = 0.015) {
+  const points: { date: string; rate: number }[] = [];
+  const now = new Date();
+  
+  // We want the final point to match baseRate
+  let currentRate = baseRate;
+  const ratesReversed: number[] = [currentRate];
+
+  for (let i = 1; i < days; i++) {
+    const change = (Math.sin(i * 0.35) * 0.003) + ((Math.random() - 0.48) * volatility * baseRate * 0.1);
+    currentRate = Math.max(0.0001, currentRate - change);
+    ratesReversed.push(Number(currentRate.toFixed(4)));
+  }
+
+  const rates = ratesReversed.reverse();
+  rates[rates.length - 1] = baseRate; // ensure exact current
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - (days - 1 - i));
+    const month = d.toLocaleDateString('en-US', { month: 'short' });
+    const day = d.getDate().toString().padStart(2, '0');
+    points.push({
+      date: `${month} ${day}`,
+      rate: rates[i],
+    });
+  }
+
+  return points;
+}
+
+export const INITIAL_CURRENCIES: CurrencyItem[] = [
+  {
+    code: 'USD',
+    name: 'US Dollar',
+    symbol: '$',
+    rateToSGD: 1.3452,
+    changePercent: 0.2,
+    changeAmount: 0.0015,
+    flagUrl: US_FLAG_URL,
+    sparkline: [45, 48, 52, 49, 44, 42, 46, 55, 60, 68, 75, 82],
+    historical30d: generateHistoricalRates(1.3452, 30, 0.012),
+    historical90d: generateHistoricalRates(1.3452, 90, 0.02),
+    high30d: 1.3620,
+    low30d: 1.3100,
+    avg30d: 1.3350,
+    high90d: 1.3780,
+    low90d: 1.2950,
+    avg90d: 1.3390,
+  },
+  {
+    code: 'EUR',
+    name: 'Euro',
+    symbol: '€',
+    rateToSGD: 1.4521,
+    changePercent: -0.1,
+    changeAmount: -0.0014,
+    sparkline: [75, 70, 65, 58, 52, 48, 45, 40, 35, 30, 28, 25],
+    historical30d: generateHistoricalRates(1.4521, 30, 0.014),
+    historical90d: generateHistoricalRates(1.4521, 90, 0.022),
+    high30d: 1.4720,
+    low30d: 1.4380,
+    avg30d: 1.4560,
+    high90d: 1.4910,
+    low90d: 1.4250,
+    avg90d: 1.4590,
+  },
+  {
+    code: 'GBP',
+    name: 'British Pound',
+    symbol: '£',
+    rateToSGD: 1.6890,
+    changePercent: 0.0,
+    changeAmount: 0.0000,
+    sparkline: [50, 52, 49, 50, 51, 48, 52, 50, 49, 51, 50, 50],
+    historical30d: generateHistoricalRates(1.6890, 30, 0.009),
+    historical90d: generateHistoricalRates(1.6890, 90, 0.018),
+    high30d: 1.7120,
+    low30d: 1.6680,
+    avg30d: 1.6885,
+    high90d: 1.7340,
+    low90d: 1.6520,
+    avg90d: 1.6910,
+  },
+  {
+    code: 'JPY',
+    name: 'Japanese Yen',
+    symbol: '¥',
+    rateToSGD: 0.0089,
+    changePercent: 0.5,
+    changeAmount: 0.00004,
+    sparkline: [20, 25, 30, 38, 45, 52, 60, 72, 80, 85, 90, 95],
+    historical30d: generateHistoricalRates(0.0089, 30, 0.02),
+    historical90d: generateHistoricalRates(0.0089, 90, 0.03),
+    high30d: 0.0092,
+    low30d: 0.0086,
+    avg30d: 0.00885,
+    high90d: 0.0095,
+    low90d: 0.0084,
+    avg90d: 0.0089,
+  },
+  {
+    code: 'MYR',
+    name: 'Malaysian Ringgit',
+    symbol: 'RM',
+    rateToSGD: 0.2854,
+    changePercent: -0.3,
+    changeAmount: -0.0009,
+    sparkline: [70, 68, 62, 58, 50, 45, 42, 38, 32, 28, 22, 18],
+    historical30d: generateHistoricalRates(0.2854, 30, 0.015),
+    historical90d: generateHistoricalRates(0.2854, 90, 0.025),
+    high30d: 0.2920,
+    low30d: 0.2810,
+    avg30d: 0.2865,
+    high90d: 0.2990,
+    low90d: 0.2780,
+    avg90d: 0.2870,
+  },
+  {
+    code: 'CNY',
+    name: 'Chinese Yuan',
+    symbol: '¥',
+    rateToSGD: 0.1837,
+    changePercent: 0.1,
+    changeAmount: 0.0002,
+    sparkline: [40, 42, 45, 43, 46, 50, 52, 55, 58, 62, 65, 68],
+    historical30d: generateHistoricalRates(0.1837, 30, 0.011),
+    historical90d: generateHistoricalRates(0.1837, 90, 0.019),
+    high30d: 0.1865,
+    low30d: 0.1812,
+    avg30d: 0.1834,
+    high90d: 0.1895,
+    low90d: 0.1798,
+    avg90d: 0.1840,
+  },
+  {
+    code: 'AUD',
+    name: 'Australian Dollar',
+    symbol: 'A$',
+    rateToSGD: 0.8712,
+    changePercent: 0.0,
+    changeAmount: 0.0000,
+    sparkline: [50, 50, 49, 51, 50, 50, 50, 49, 51, 50, 50, 50],
+    historical30d: generateHistoricalRates(0.8712, 30, 0.013),
+    historical90d: generateHistoricalRates(0.8712, 90, 0.021),
+    high30d: 0.8890,
+    low30d: 0.8540,
+    avg30d: 0.8705,
+    high90d: 0.9020,
+    low90d: 0.8460,
+    avg90d: 0.8720,
+  },
+];
+
+export const AVAILABLE_CURRENCIES_TO_ADD: Omit<CurrencyItem, 'historical30d' | 'historical90d'>[] = [
+  {
+    code: 'CAD',
+    name: 'Canadian Dollar',
+    symbol: 'C$',
+    rateToSGD: 0.9850,
+    changePercent: 0.1,
+    changeAmount: 0.0010,
+    sparkline: [40, 42, 48, 52, 56, 58, 62, 60, 65, 68, 70, 72],
+    high30d: 0.9980,
+    low30d: 0.9710,
+    avg30d: 0.9840,
+    high90d: 1.0120,
+    low90d: 0.9630,
+    avg90d: 0.9860,
+  },
+  {
+    code: 'CHF',
+    name: 'Swiss Franc',
+    symbol: 'CHF',
+    rateToSGD: 1.5230,
+    changePercent: -0.2,
+    changeAmount: -0.0030,
+    sparkline: [68, 65, 62, 60, 55, 52, 48, 45, 42, 40, 38, 35],
+    high30d: 1.5490,
+    low30d: 1.5080,
+    avg30d: 1.5260,
+    high90d: 1.5720,
+    low90d: 1.4920,
+    avg90d: 1.5310,
+  },
+  {
+    code: 'HKD',
+    name: 'Hong Kong Dollar',
+    symbol: 'HK$',
+    rateToSGD: 0.1718,
+    changePercent: 0.0,
+    changeAmount: 0.0000,
+    sparkline: [50, 49, 51, 50, 50, 50, 51, 49, 50, 50, 50, 50],
+    high30d: 0.1740,
+    low30d: 0.1695,
+    avg30d: 0.1715,
+    high90d: 0.1765,
+    low90d: 0.1680,
+    avg90d: 0.1720,
+  },
+  {
+    code: 'NZD',
+    name: 'New Zealand Dollar',
+    symbol: 'NZ$',
+    rateToSGD: 0.8045,
+    changePercent: 0.3,
+    changeAmount: 0.0024,
+    sparkline: [30, 35, 38, 45, 50, 55, 62, 68, 72, 78, 82, 86],
+    high30d: 0.8210,
+    low30d: 0.7890,
+    avg30d: 0.8030,
+    high90d: 0.8350,
+    low90d: 0.7780,
+    avg90d: 0.8050,
+  },
+  {
+    code: 'THB',
+    name: 'Thai Baht',
+    symbol: '฿',
+    rateToSGD: 0.0371,
+    changePercent: -0.4,
+    changeAmount: -0.00015,
+    sparkline: [75, 70, 66, 62, 56, 50, 44, 40, 35, 30, 26, 22],
+    high30d: 0.0385,
+    low30d: 0.0362,
+    avg30d: 0.0374,
+    high90d: 0.0395,
+    low90d: 0.0355,
+    avg90d: 0.0376,
+  },
+  {
+    code: 'KRW',
+    name: 'South Korean Won',
+    symbol: '₩',
+    rateToSGD: 0.00101,
+    changePercent: -0.2,
+    changeAmount: -0.000002,
+    sparkline: [60, 58, 55, 50, 48, 44, 42, 38, 35, 32, 30, 28],
+    high30d: 0.00105,
+    low30d: 0.00098,
+    avg30d: 0.00101,
+    high90d: 0.00108,
+    low90d: 0.00096,
+    avg90d: 0.00102,
+  },
+  {
+    code: 'INR',
+    name: 'Indian Rupee',
+    symbol: '₹',
+    rateToSGD: 0.0161,
+    changePercent: 0.1,
+    changeAmount: 0.00002,
+    sparkline: [40, 42, 45, 48, 52, 55, 58, 60, 62, 65, 68, 70],
+    high30d: 0.0164,
+    low30d: 0.0158,
+    avg30d: 0.0161,
+    high90d: 0.0168,
+    low90d: 0.0156,
+    avg90d: 0.0162,
+  },
+];
+
+export const INITIAL_ALERTS: AlertItem[] = [
+  {
+    id: 'alert-1',
+    currencyCode: 'USD',
+    baseCurrency: 'USD',
+    targetCurrency: 'SGD',
+    direction: 'foreign_to_sgd',
+    condition: 'rises',
+    targetRate: 1.3600,
+    status: 'active',
+    createdAt: '2023-10-20T10:00:00Z',
+  },
+  {
+    id: 'alert-2',
+    currencyCode: 'MYR',
+    baseCurrency: 'SGD',
+    targetCurrency: 'MYR',
+    direction: 'sgd_to_foreign',
+    condition: 'rises',
+    targetRate: 3.5500,
+    status: 'active',
+    createdAt: '2023-10-21T09:15:00Z',
+  },
+  {
+    id: 'alert-3',
+    currencyCode: 'EUR',
+    baseCurrency: 'EUR',
+    targetCurrency: 'SGD',
+    direction: 'foreign_to_sgd',
+    condition: 'falls',
+    targetRate: 1.4200,
+    status: 'triggered',
+    triggeredAt: '24 Oct, 14:30 SGT',
+    createdAt: '2023-10-18T08:30:00Z',
+  },
+];
+
+export const INITIAL_RECENT_CONVERSIONS: ConversionRecord[] = [
+  {
+    id: 'conv-1',
+    fromCode: 'SGD',
+    fromAmount: 1000,
+    toCode: 'USD',
+    toAmount: 743.20,
+    rate: 0.7432,
+    timestamp: '2023-10-26T14:28:00Z',
+    relativeTime: 'Today',
+  },
+  {
+    id: 'conv-2',
+    fromCode: 'SGD',
+    fromAmount: 500,
+    toCode: 'EUR',
+    toAmount: 340.15,
+    rate: 0.6803,
+    timestamp: '2023-10-25T16:15:00Z',
+    relativeTime: 'Yesterday',
+  },
+];
+
+export function buildCompleteCurrency(item: Omit<CurrencyItem, 'historical30d' | 'historical90d'>): CurrencyItem {
+  return {
+    ...item,
+    historical30d: generateHistoricalRates(item.rateToSGD, 30, 0.015),
+    historical90d: generateHistoricalRates(item.rateToSGD, 90, 0.025),
+  };
+}
