@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowLeftRight, BellRing, ArrowRight, ChevronDown, Check, RefreshCw, Search, X } from 'lucide-react';
+import { ArrowLeftRight, BellRing, ArrowRight, ChevronDown, Check, RefreshCw, Search, X, Trash2 } from 'lucide-react';
 import { CurrencyItem, ConversionRecord } from '../types';
 import { ALL_MAS_CURRENCIES } from '../data/currencies';
 import { CurrencyFlag } from './CurrencyFlag';
@@ -8,6 +8,8 @@ interface ConverterViewProps {
   currencies: CurrencyItem[];
   recentConversions: ConversionRecord[];
   onAddConversion: (record: ConversionRecord) => void;
+  onDeleteConversion?: (id: string) => void;
+  onClearAllConversions?: () => void;
   onNavigateToAlerts: (currencyCode: string, targetRate?: number) => void;
 }
 
@@ -22,6 +24,8 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
   currencies,
   recentConversions,
   onAddConversion,
+  onDeleteConversion,
+  onClearAllConversions,
   onNavigateToAlerts,
 }) => {
   // Conversion state
@@ -417,24 +421,40 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
 
           {/* Recent Conversions */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center justify-between">
-              <span>Recent Conversions</span>
-              <span className="text-[11px] font-semibold text-slate-400 uppercase">History</span>
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-900">
+                Recent Conversions
+              </h3>
+              <div className="flex items-center gap-2">
+                {recentConversions.length > 0 && onClearAllConversions && (
+                  <button
+                    onClick={onClearAllConversions}
+                    className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 transition-colors px-2 py-0.5 rounded hover:bg-rose-50 cursor-pointer"
+                    title="Clear all recent conversions"
+                  >
+                    Clear all
+                  </button>
+                )}
+                <span className="text-[11px] font-semibold text-slate-400 uppercase">
+                  History
+                </span>
+              </div>
+            </div>
+
             {recentConversions.length === 0 ? (
               <p className="text-xs text-slate-400 py-4 text-center">No conversions recorded yet</p>
             ) : (
-              <ul className="flex flex-col gap-2">
-                {recentConversions.slice(0, 3).map((item) => (
+              <ul className="flex flex-col gap-1 max-h-[260px] overflow-y-auto pr-1 divide-y divide-slate-100">
+                {recentConversions.map((item) => (
                   <li
                     key={item.id}
-                    className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0"
+                    className="group flex justify-between items-center py-2.5 transition-colors hover:bg-slate-50/80 px-1.5 rounded-lg"
                   >
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 flex-wrap">
                       <span>
                         {item.fromAmount.toLocaleString()} {item.fromCode}
                       </span>
-                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                      <ArrowRight className="w-3 h-3 text-slate-400 shrink-0" />
                       <span>
                         {item.toAmount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
@@ -443,7 +463,19 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
                         {item.toCode}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-400">{item.relativeTime}</span>
+                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                      <span className="text-[11px] text-slate-400">{item.relativeTime}</span>
+                      {onDeleteConversion && (
+                        <button
+                          onClick={() => onDeleteConversion(item.id)}
+                          className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete conversion"
+                          aria-label={`Delete conversion of ${item.fromAmount} ${item.fromCode} to ${item.toCode}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>

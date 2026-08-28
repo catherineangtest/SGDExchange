@@ -222,6 +222,14 @@ export default function App() {
     setRecentConversions([record, ...recentConversions]);
   };
 
+  const handleDeleteConversion = (id: string) => {
+    setRecentConversions((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleClearAllConversions = () => {
+    setRecentConversions([]);
+  };
+
   const handleTriggerSimulatedNotification = (message: string) => {
     setBannerMessage(message);
     setBannerVisible(true);
@@ -274,6 +282,8 @@ export default function App() {
             currencies={currencies}
             recentConversions={recentConversions}
             onAddConversion={handleAddConversion}
+            onDeleteConversion={handleDeleteConversion}
+            onClearAllConversions={handleClearAllConversions}
             onNavigateToAlerts={(code, rate) => handleNavigateToAlerts(code, rate, 'foreign_to_sgd')}
           />
         )}
