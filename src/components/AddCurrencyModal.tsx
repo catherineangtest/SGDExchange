@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Plus, Check } from 'lucide-react';
 import { CurrencyItem } from '../types';
-import { AVAILABLE_CURRENCIES_TO_ADD, buildCompleteCurrency } from '../data/currencies';
+import { ALL_MAS_CURRENCIES, buildCompleteCurrency } from '../data/currencies';
 import { CurrencyFlag } from './CurrencyFlag';
 
 interface AddCurrencyModalProps {
@@ -24,7 +24,7 @@ export const AddCurrencyModal: React.FC<AddCurrencyModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleAddPreset = (preset: typeof AVAILABLE_CURRENCIES_TO_ADD[0]) => {
+  const handleAddPreset = (preset: typeof ALL_MAS_CURRENCIES[0]) => {
     const full = buildCompleteCurrency(preset);
     onAddCurrency(full);
   };
@@ -86,7 +86,7 @@ export const AddCurrencyModal: React.FC<AddCurrencyModalProps> = ({
           </div>
 
           <div className="grid grid-cols-1 gap-2.5">
-            {AVAILABLE_CURRENCIES_TO_ADD.map((curr) => {
+            {ALL_MAS_CURRENCIES.map((curr) => {
               const alreadyAdded = existingCodes.includes(curr.code);
 
               return (

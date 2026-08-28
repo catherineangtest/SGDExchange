@@ -129,8 +129,12 @@ function extractRatesFromMasPayload(payload: any): Record<string, number> {
     TWD: [{ key: 'twd_sgd_100', per100: true }, { key: 'twd_sgd' }, { key: 'twd', per100: true }],
     SEK: [{ key: 'sek_sgd_100', per100: true }, { key: 'sek_sgd' }, { key: 'sek', per100: true }],
     NOK: [{ key: 'nok_sgd_100', per100: true }, { key: 'nok_sgd' }, { key: 'nok', per100: true }],
+    DKK: [{ key: 'dkk_sgd_100', per100: true }, { key: 'dkk_sgd' }, { key: 'dkk', per100: true }],
+    PHP: [{ key: 'php_sgd_100', per100: true }, { key: 'php_sgd' }, { key: 'php', per100: true }],
+    VND: [{ key: 'vnd_sgd_100', per100: true }, { key: 'vnd_sgd' }, { key: 'vnd', per100: true }],
     SAR: [{ key: 'sar_sgd_100', per100: true }, { key: 'sar_sgd' }, { key: 'sar', per100: true }],
     AED: [{ key: 'aed_sgd_100', per100: true }, { key: 'aed_sgd' }, { key: 'aed', per100: true }],
+    ZAR: [{ key: 'zar_sgd_100', per100: true }, { key: 'zar_sgd' }, { key: 'zar', per100: true }],
   };
 
   Object.entries(mappings).forEach(([currencyCode, options]) => {

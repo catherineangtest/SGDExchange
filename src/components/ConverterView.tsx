@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { ArrowLeftRight, BellRing, ArrowRight, ChevronDown, Check, RefreshCw } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { ArrowLeftRight, BellRing, ArrowRight, ChevronDown, Check, RefreshCw, Search, X } from 'lucide-react';
 import { CurrencyItem, ConversionRecord } from '../types';
+import { ALL_MAS_CURRENCIES } from '../data/currencies';
 import { CurrencyFlag } from './CurrencyFlag';
 
 interface ConverterViewProps {
@@ -8,6 +9,13 @@ interface ConverterViewProps {
   recentConversions: ConversionRecord[];
   onAddConversion: (record: ConversionRecord) => void;
   onNavigateToAlerts: (currencyCode: string, targetRate?: number) => void;
+}
+
+interface FullCurrencyOption {
+  code: string;
+  name: string;
+  symbol: string;
+  rateToSGD: number; // SGD value of 1 unit of this currency (1.0 for SGD)
 }
 
 export const ConverterView: React.FC<ConverterViewProps> = ({
@@ -20,35 +28,80 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
   const [fromCode, setFromCode] = useState<string>('SGD');
   const [toCode, setToCode] = useState<string>('USD');
   const [sendAmount, setSendAmount] = useState<string>('1000.00');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<'from' | 'to' | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [justConverted, setJustConverted] = useState(false);
-  const [lastUpdatedMin, setLastUpdatedMin] = useState(2);
+  const [lastUpdatedMin, setLastUpdatedMin] = useState(1);
 
-  // Find rate:
-  // If fromCode is SGD, rate is 1 / toCurrency.rateToSGD
-  // If toCode is SGD, rate is fromCurrency.rateToSGD
+  // Compile all available MAS currencies merged with any dynamic rates from active currencies
+  const allAvailableCurrencies: FullCurrencyOption[] = useMemo(() => {
+    const list: FullCurrencyOption[] = [
+      {
+        code: 'SGD',
+        name: 'Singapore Dollar',
+        symbol: 'S$',
+        rateToSGD: 1.0,
+      },
+    ];
+
+    // Build map from ALL_MAS_CURRENCIES
+    const map = new Map<string, FullCurrencyOption>();
+    ALL_MAS_CURRENCIES.forEach((c) => {
+      map.set(c.code, {
+        code: c.code,
+        name: c.name,
+        symbol: c.symbol,
+        rateToSGD: c.rateToSGD,
+      });
+    });
+
+    // Override with any live/custom currencies from props
+    currencies.forEach((c) => {
+      if (c.code !== 'SGD') {
+        map.set(c.code, {
+          code: c.code,
+          name: c.name,
+          symbol: c.symbol,
+          rateToSGD: c.rateToSGD,
+        });
+      }
+    });
+
+    map.forEach((value) => {
+      list.push(value);
+    });
+
+    return list;
+  }, [currencies]);
+
+  // Calculate conversion exchange rate
   const getRate = (from: string, to: string): number => {
     if (from === to) return 1;
-    if (from === 'SGD') {
-      const target = currencies.find((c) => c.code === to);
-      return target ? 1 / target.rateToSGD : 0.7432;
-    }
-    if (to === 'SGD') {
-      const source = currencies.find((c) => c.code === from);
-      return source ? source.rateToSGD : 1.3452;
-    }
-    // Cross rate
-    const source = currencies.find((c) => c.code === from);
-    const target = currencies.find((c) => c.code === to);
-    if (source && target) {
-      return source.rateToSGD / target.rateToSGD;
-    }
-    return 1;
+    const fromCurr = allAvailableCurrencies.find((c) => c.code === from);
+    const toCurr = allAvailableCurrencies.find((c) => c.code === to);
+
+    const fromRateToSGD = from === 'SGD' ? 1.0 : fromCurr ? fromCurr.rateToSGD : 1.0;
+    const toRateToSGD = to === 'SGD' ? 1.0 : toCurr ? toCurr.rateToSGD : 1.0;
+
+    if (toRateToSGD === 0) return 1;
+    return fromRateToSGD / toRateToSGD;
   };
 
-  const rate = getRate(fromCode, toCode);
+  const currentRate = getRate(fromCode, toCode);
+  const inverseRate = currentRate > 0 ? 1 / currentRate : 0;
   const numericSend = parseFloat(sendAmount) || 0;
-  const receiveAmount = (numericSend * rate).toFixed(2);
+  const calculatedReceive = (numericSend * currentRate).toFixed(
+    currentRate < 0.01 ? 4 : 2
+  );
+
+  // Filter list for dropdown search
+  const filteredCurrencies = useMemo(() => {
+    if (!searchQuery.trim()) return allAvailableCurrencies;
+    const q = searchQuery.toLowerCase().trim();
+    return allAvailableCurrencies.filter(
+      (c) => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
+    );
+  }, [allAvailableCurrencies, searchQuery]);
 
   // Swap currencies
   const handleSwap = () => {
@@ -63,8 +116,8 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
       fromCode,
       fromAmount: numericSend,
       toCode,
-      toAmount: parseFloat(receiveAmount),
-      rate: Number(rate.toFixed(4)),
+      toAmount: parseFloat(calculatedReceive),
+      rate: Number(currentRate.toFixed(4)),
       timestamp: new Date().toISOString(),
       relativeTime: 'Just now',
     };
@@ -73,8 +126,10 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
     setTimeout(() => setJustConverted(false), 2000);
   };
 
-  const activeForeignCurrency =
-    currencies.find((c) => c.code === (fromCode === 'SGD' ? toCode : fromCode)) || currencies[0];
+  const fromCurrencyObj = allAvailableCurrencies.find((c) => c.code === fromCode) || allAvailableCurrencies[0];
+  const toCurrencyObj = allAvailableCurrencies.find((c) => c.code === toCode) || allAvailableCurrencies[1];
+  const activeForeignCode = fromCode === 'SGD' ? toCode : fromCode;
+  const activeForeignRate = fromCode === 'SGD' ? (toCurrencyObj ? toCurrencyObj.rateToSGD : 1) : (fromCurrencyObj ? fromCurrencyObj.rateToSGD : 1);
 
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 md:px-12 py-8 md:py-12 flex flex-col items-center">
@@ -86,7 +141,7 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2 h-2 bg-indigo-600 rounded-full"></span>
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                  Instant Exchange
+                  MAS Multi-Currency Exchange
                 </span>
               </div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -94,21 +149,33 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
               </h1>
             </div>
             <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl hidden sm:inline-block">
-              Zero Fee Estimate
+              All MAS Currencies Available ({allAvailableCurrencies.length})
             </span>
           </div>
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 relative">
             {/* Left Input: You Send */}
-            <div className="w-full md:w-[46%] bg-slate-50 rounded-2xl p-4 md:p-5 border border-slate-200/80 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+            <div className="w-full md:w-[46%] bg-slate-50 rounded-2xl p-4 md:p-5 border border-slate-200/80 focus-within:border-indigo-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-100 transition-all relative">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
                 You Send
               </label>
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setOpenDropdown(openDropdown === 'from' ? null : 'from');
+                  }}
+                  className="flex items-center gap-2 hover:bg-slate-200/70 px-2 py-1 -ml-2 rounded-xl transition-colors cursor-pointer shrink-0"
+                  aria-label="Select source currency"
+                >
                   <CurrencyFlag code={fromCode} size={32} />
-                  <span className="text-xl font-bold text-slate-900">{fromCode}</span>
-                </div>
+                  <span className="text-xl font-bold text-slate-900 flex items-center">
+                    {fromCode}
+                    <ChevronDown className="w-4 h-4 ml-1 text-slate-400" />
+                  </span>
+                </button>
+
                 <input
                   type="number"
                   step="any"
@@ -118,6 +185,66 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
                   className="w-full bg-transparent text-2xl md:text-3xl font-bold text-right text-slate-900 outline-none border-none p-0 focus:ring-0"
                 />
               </div>
+
+              {/* FROM Currency Selector Dropdown */}
+              {openDropdown === 'from' && (
+                <div className="absolute top-full left-0 mt-2 w-80 max-h-80 overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 flex flex-col">
+                  <div className="p-3 border-b border-slate-100 bg-slate-50/70">
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search currency or country..."
+                        className="w-full pl-9 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                        autoFocus
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="overflow-y-auto p-2 max-h-60">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
+                      MAS Data Currencies ({filteredCurrencies.length})
+                    </div>
+                    {filteredCurrencies.map((curr) => (
+                      <button
+                        key={'from-' + curr.code}
+                        type="button"
+                        onClick={() => {
+                          setFromCode(curr.code);
+                          setOpenDropdown(null);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors text-left cursor-pointer ${
+                          fromCode === curr.code ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <CurrencyFlag code={curr.code} size={24} />
+                          <div className="truncate">
+                            <div className="text-sm font-semibold">{curr.code}</div>
+                            <div className="text-xs text-slate-400 truncate">{curr.name}</div>
+                          </div>
+                        </div>
+                        {fromCode === curr.code && <Check className="w-4 h-4 text-indigo-600 shrink-0 ml-2" />}
+                      </button>
+                    ))}
+                    {filteredCurrencies.length === 0 && (
+                      <div className="text-center py-6 text-xs text-slate-400">
+                        No currencies match "{searchQuery}"
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Swap Button */}
@@ -137,8 +264,12 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
               <div className="flex items-center justify-between gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setOpenDropdown(openDropdown === 'to' ? null : 'to');
+                  }}
                   className="flex items-center gap-2 hover:bg-slate-200/70 px-2 py-1 -ml-2 rounded-xl transition-colors cursor-pointer shrink-0"
+                  aria-label="Select target currency"
                 >
                   <CurrencyFlag code={toCode} size={32} />
                   <span className="text-xl font-bold text-slate-900 flex items-center">
@@ -150,39 +281,69 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
                 <input
                   type="text"
                   readOnly
-                  value={receiveAmount}
+                  value={calculatedReceive}
                   placeholder="0.00"
                   className="w-full bg-transparent text-2xl md:text-3xl font-bold text-right text-slate-900 outline-none border-none p-0 focus:ring-0 cursor-default"
                 />
               </div>
 
-              {/* Currency Selector Dropdown */}
-              {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-68 max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 p-2">
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 py-1.5 border-b border-slate-100 mb-1">
-                    Select Currency
+              {/* TO Currency Selector Dropdown */}
+              {openDropdown === 'to' && (
+                <div className="absolute top-full right-0 mt-2 w-80 max-h-80 overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 flex flex-col">
+                  <div className="p-3 border-b border-slate-100 bg-slate-50/70">
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search currency or country..."
+                        className="w-full pl-9 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                        autoFocus
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  {currencies.map((curr) => (
-                    <button
-                      key={curr.code}
-                      onClick={() => {
-                        setToCode(curr.code);
-                        setIsDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors text-left cursor-pointer ${
-                        toCode === curr.code ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-800'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <CurrencyFlag code={curr.code} size={22} />
-                        <div>
-                          <div className="text-sm font-semibold">{curr.code}</div>
-                          <div className="text-xs text-slate-400">{curr.name}</div>
+
+                  <div className="overflow-y-auto p-2 max-h-60">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
+                      MAS Data Currencies ({filteredCurrencies.length})
+                    </div>
+                    {filteredCurrencies.map((curr) => (
+                      <button
+                        key={'to-' + curr.code}
+                        type="button"
+                        onClick={() => {
+                          setToCode(curr.code);
+                          setOpenDropdown(null);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors text-left cursor-pointer ${
+                          toCode === curr.code ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <CurrencyFlag code={curr.code} size={24} />
+                          <div className="truncate">
+                            <div className="text-sm font-semibold">{curr.code}</div>
+                            <div className="text-xs text-slate-400 truncate">{curr.name}</div>
+                          </div>
                         </div>
+                        {toCode === curr.code && <Check className="w-4 h-4 text-indigo-600 shrink-0 ml-2" />}
+                      </button>
+                    ))}
+                    {filteredCurrencies.length === 0 && (
+                      <div className="text-center py-6 text-xs text-slate-400">
+                        No currencies match "{searchQuery}"
                       </div>
-                      {toCode === curr.code && <Check className="w-4 h-4 text-indigo-600" />}
-                    </button>
-                  ))}
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -192,14 +353,17 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
           <div className="flex flex-col md:flex-row items-center justify-between mt-2 pt-4 border-t border-slate-100 gap-4">
             <div className="text-center md:text-left">
               <p className="text-sm md:text-base font-bold text-slate-800">
-                1 {fromCode} = {rate < 0.01 ? rate.toFixed(6) : rate.toFixed(4)} {toCode}
+                1 {fromCode} = {currentRate < 0.01 ? currentRate.toFixed(6) : currentRate.toFixed(4)} {toCode}
+                <span className="text-xs font-normal text-slate-400 ml-2">
+                  (1 {toCode} = {inverseRate < 0.01 ? inverseRate.toFixed(6) : inverseRate.toFixed(4)} {fromCode})
+                </span>
               </p>
               <p className="text-xs text-slate-400 mt-0.5 flex items-center justify-center md:justify-start gap-1">
-                Mid-market rate • Last updated {lastUpdatedMin} mins ago
+                MAS End-of-Day closing benchmark rate • Updated {lastUpdatedMin} min ago
                 <button
                   onClick={() => setLastUpdatedMin(1)}
                   title="Refresh rate"
-                  className="hover:text-indigo-600 p-0.5 transition-colors"
+                  className="hover:text-indigo-600 p-0.5 transition-colors cursor-pointer"
                 >
                   <RefreshCw className="w-3 h-3" />
                 </button>
@@ -216,7 +380,7 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
                   Conversion Saved!
                 </>
               ) : (
-                'Convert Now'
+                'Save Conversion'
               )}
             </button>
           </div>
@@ -231,16 +395,16 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 mb-1">
-                Set Alert for {activeForeignCurrency.code}/SGD
+                Set Alert for {activeForeignCode}/SGD
               </h3>
               <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                Receive instant notifications when rates cross your target threshold.
+                Receive instant notifications when MAS end of period rates cross your target threshold.
               </p>
               <button
                 onClick={() =>
                   onNavigateToAlerts(
-                    activeForeignCurrency.code,
-                    activeForeignCurrency.rateToSGD
+                    activeForeignCode,
+                    activeForeignRate
                   )
                 }
                 className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors cursor-pointer group"
@@ -257,29 +421,33 @@ export const ConverterView: React.FC<ConverterViewProps> = ({
               <span>Recent Conversions</span>
               <span className="text-[11px] font-semibold text-slate-400 uppercase">History</span>
             </h3>
-            <ul className="flex flex-col gap-2">
-              {recentConversions.slice(0, 3).map((item) => (
-                <li
-                  key={item.id}
-                  className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0"
-                >
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
-                    <span>
-                      {item.fromAmount.toLocaleString()} {item.fromCode}
-                    </span>
-                    <ArrowRight className="w-3 h-3 text-slate-400" />
-                    <span>
-                      {item.toAmount.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}{' '}
-                      {item.toCode}
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-400">{item.relativeTime}</span>
-                </li>
-              ))}
-            </ul>
+            {recentConversions.length === 0 ? (
+              <p className="text-xs text-slate-400 py-4 text-center">No conversions recorded yet</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {recentConversions.slice(0, 3).map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0"
+                  >
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+                      <span>
+                        {item.fromAmount.toLocaleString()} {item.fromCode}
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                      <span>
+                        {item.toAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: item.rate < 0.01 ? 4 : 2,
+                        })}{' '}
+                        {item.toCode}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-400">{item.relativeTime}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>

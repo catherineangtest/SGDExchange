@@ -217,10 +217,166 @@ export const CurrencyFlag: React.FC<CurrencyFlagProps> = ({ code, className = ''
           <rect y="26" width="32" height="6" fill="#A51931" />
         </svg>
       );
+    case 'KRW':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 border border-slate-200 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="32" fill="#FFFFFF" />
+          <circle cx="16" cy="16" r="7" fill="#C60C30" />
+          <path d="M 9,16 A 7,7 0 0,0 23,16 A 3.5,3.5 0 0,0 16,16 A 3.5,3.5 0 0,1 9,16" fill="#003478" />
+        </svg>
+      );
+    case 'INR':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="10.6" fill="#FF9933" />
+          <rect y="10.6" width="32" height="10.8" fill="#FFFFFF" />
+          <rect y="21.4" width="32" height="10.6" fill="#138808" />
+          <circle cx="16" cy="16" r="3.5" fill="none" stroke="#000080" strokeWidth="1" />
+          <circle cx="16" cy="16" r="0.8" fill="#000080" />
+        </svg>
+      );
+    case 'IDR':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 border border-slate-200 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="16" fill="#FF0000" />
+          <rect y="16" width="32" height="16" fill="#FFFFFF" />
+        </svg>
+      );
+    case 'TWD':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="32" fill="#FE0000" />
+          <rect width="16" height="16" fill="#000095" />
+          <circle cx="8" cy="8" r="4.5" fill="#FFFFFF" />
+          <circle cx="8" cy="8" r="3" fill="#000095" />
+          <circle cx="8" cy="8" r="2.2" fill="#FFFFFF" />
+        </svg>
+      );
+    case 'PHP':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="16" fill="#0038A8" />
+          <rect y="16" width="32" height="16" fill="#CE1126" />
+          <polygon points="0,0 16,16 0,32" fill="#FFFFFF" />
+          <circle cx="6" cy="16" r="2.5" fill="#FCD116" />
+        </svg>
+      );
+    case 'VND':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="32" fill="#DA251D" />
+          <polygon
+            points="16,8 18.5,14 24,14 19.5,17.5 21,23 16,19.5 11,23 12.5,17.5 8,14 13.5,14"
+            fill="#FFFF00"
+          />
+        </svg>
+      );
+    case 'SEK':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="32" fill="#006AA7" />
+          <rect x="10" width="5" height="32" fill="#FECC00" />
+          <rect y="13.5" width="32" height="5" fill="#FECC00" />
+        </svg>
+      );
+    case 'NOK':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="32" fill="#BA0C2F" />
+          <rect x="9" width="7" height="32" fill="#FFFFFF" />
+          <rect y="12.5" width="32" height="7" fill="#FFFFFF" />
+          <rect x="10.5" width="4" height="32" fill="#00205B" />
+          <rect y="14" width="32" height="4" fill="#00205B" />
+        </svg>
+      );
+    case 'DKK':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="32" fill="#C8102E" />
+          <rect x="10" width="4.5" height="32" fill="#FFFFFF" />
+          <rect y="13.5" width="32" height="4.5" fill="#FFFFFF" />
+        </svg>
+      );
+    case 'SAR':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="32" fill="#006C35" />
+          <rect x="8" y="19" width="16" height="2" fill="#FFFFFF" rx="1" />
+          <path d="M10,12 Q16,8 22,12" stroke="#FFFFFF" strokeWidth="2" fill="none" />
+        </svg>
+      );
+    case 'AED':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="10.6" fill="#00732F" />
+          <rect y="10.6" width="32" height="10.8" fill="#FFFFFF" />
+          <rect y="21.4" width="32" height="10.6" fill="#000000" />
+          <rect width="10" height="32" fill="#FF0000" />
+        </svg>
+      );
+    case 'ZAR':
+      return (
+        <svg
+          viewBox="0 0 32 32"
+          className={`rounded-full overflow-hidden shadow-sm shrink-0 ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <rect width="32" height="16" fill="#E03C31" />
+          <rect y="16" width="32" height="16" fill="#001489" />
+          <polygon points="0,0 14,16 0,32" fill="#000000" />
+          <polygon points="0,0 16,16 0,32" fill="none" stroke="#FFB81C" strokeWidth="2" />
+          <rect y="13" width="32" height="6" fill="#007749" />
+          <rect y="14.5" width="32" height="3" fill="#FFFFFF" />
+        </svg>
+      );
     default:
       return (
         <div
-          className={`rounded-full bg-primary-fixed text-primary font-bold flex items-center justify-center text-xs shadow-sm shrink-0 ${className}`}
+          className={`rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-bold flex items-center justify-center text-xs shadow-xs shrink-0 ${className}`}
           style={{ width: size, height: size }}
         >
           {upper.slice(0, 3)}
