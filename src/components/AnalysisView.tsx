@@ -382,8 +382,23 @@ export const AnalysisView: React.FC<AnalysisViewProps> = ({
       </div>
 
       {/* Disqus Comments Section for this Currency Pair */}
-      <div className="mt-10">
+      <div className="mt-10 bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">
+              {currency.code}/SGD Currency Discussion
+            </h2>
+            <p className="text-xs text-slate-500">
+              Discuss historical price movements, forecasts, and money transfer rates for {currency.name}
+            </p>
+          </div>
+          <span className="text-[11px] uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 font-semibold w-fit border border-indigo-100">
+            {currency.code}/SGD Thread
+          </span>
+        </div>
+
         <DisqusComments
+          url={`https://sgd-exchange.vercel.app/analysis/${currency.code.toLowerCase()}`}
           identifier={`sgdexchange-analysis-${currency.code.toLowerCase()}`}
           title={`${currency.code}/SGD Exchange Rate Discussion & Analysis`}
         />
