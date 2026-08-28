@@ -6,7 +6,6 @@ import {
   Edit2,
   BellOff,
   ChevronDown,
-  Sparkles,
   CheckCircle2,
   X,
   ArrowLeftRight,
@@ -23,7 +22,7 @@ interface AlertsViewProps {
   onUpdateAlert: (alert: AlertItem) => void;
   onDeleteAlert: (id: string) => void;
   onReactivateAlert: (id: string) => void;
-  onTriggerSimulatedNotification: (message: string) => void;
+  onTriggerSimulatedNotification?: (message: string) => void;
 }
 
 export const AlertsView: React.FC<AlertsViewProps> = ({
@@ -36,7 +35,6 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
   onUpdateAlert,
   onDeleteAlert,
   onReactivateAlert,
-  onTriggerSimulatedNotification,
 }) => {
   const [direction, setDirection] = useState<PairDirection>(prefilledDirection);
   const [selectedPair, setSelectedPair] = useState<string>(prefilledCurrency);
@@ -193,11 +191,6 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
     }
   };
 
-  const pairSimulationMessage =
-    direction === 'sgd_to_foreign'
-      ? `SGD/${selectedPair} hit ${targetRate} — your target rate.`
-      : `${selectedPair}/SGD hit ${targetRate} — your target rate.`;
-
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 md:px-12 py-8 md:py-12 space-y-8 md:space-y-12">
       {/* Page Header */}
@@ -216,15 +209,6 @@ export const AlertsView: React.FC<AlertsViewProps> = ({
             Configure triggers for both Foreign/SGD and SGD/Foreign exchange rates
           </p>
         </div>
-
-        {/* Test alert trigger button */}
-        <button
-          onClick={() => onTriggerSimulatedNotification(pairSimulationMessage)}
-          className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-xs"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-          Simulate Rate Trigger
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">

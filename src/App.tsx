@@ -302,7 +302,6 @@ export default function App() {
             onUpdateAlert={handleUpdateAlert}
             onDeleteAlert={handleDeleteAlert}
             onReactivateAlert={handleReactivateAlert}
-            onTriggerSimulatedNotification={handleTriggerSimulatedNotification}
           />
         )}
 
