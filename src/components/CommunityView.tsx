@@ -55,32 +55,12 @@ export const CommunityView: React.FC = () => {
       </div>
 
       {/* Disqus Comments Integration */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
-              <MessageSquare className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">
-                Community Discussion Board
-              </h2>
-              <p className="text-xs text-slate-500">
-                Post questions, rate comparisons, and exchange rate thoughts
-              </p>
-            </div>
-          </div>
-          <span className="text-[11px] uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 font-semibold w-fit border border-indigo-100">
-            Live Disqus Board
-          </span>
-        </div>
-
-        <DisqusComments
-          url="https://sgd-exchange.vercel.app/community"
-          identifier="sgdexchange-community"
-          title="SGD Exchange Community Discussion"
-        />
-      </div>
+      <DisqusComments
+        url="https://sgd-exchange.vercel.app/community"
+        identifier="sgdexchange-community"
+        title="SGD Exchange Community Discussion"
+        shortname="sgdexchange"
+      />
     </div>
   );
 };
