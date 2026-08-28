@@ -17,6 +17,7 @@ import { DashboardView } from './components/DashboardView';
 import { ConverterView } from './components/ConverterView';
 import { AnalysisView } from './components/AnalysisView';
 import { AlertsView } from './components/AlertsView';
+import { CommunityView } from './components/CommunityView';
 import { AddCurrencyModal } from './components/AddCurrencyModal';
 import { InfoModals } from './components/InfoModals';
 import { fetchMasDailyRates, checkMasApiStatus, MasApiStatus } from './services/masApi';
@@ -303,6 +304,10 @@ export default function App() {
             onReactivateAlert={handleReactivateAlert}
             onTriggerSimulatedNotification={handleTriggerSimulatedNotification}
           />
+        )}
+
+        {currentTab === 'community' && (
+          <CommunityView />
         )}
       </main>
 

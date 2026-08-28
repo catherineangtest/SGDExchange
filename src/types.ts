@@ -1,4 +1,4 @@
-export type TabType = 'dashboard' | 'converter' | 'alerts' | 'analysis';
+export type TabType = 'dashboard' | 'converter' | 'alerts' | 'analysis' | 'community';
 export type PairDirection = 'foreign_to_sgd' | 'sgd_to_foreign';
 
 export interface CurrencyItem {

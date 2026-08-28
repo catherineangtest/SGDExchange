@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ArrowLeftRight, Bell, User } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Bell, User, MessageSquare } from 'lucide-react';
 import { TabType } from '../types';
 
 interface NavbarProps {
@@ -75,6 +75,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block animate-pulse" />
                 )}
               </button>
+
+              <button
+                onClick={() => onSelectTab('community')}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeNavTab === 'community'
+                    ? 'bg-white text-indigo-600 font-bold shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Community
+              </button>
             </nav>
           </div>
 
@@ -94,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <nav className="fixed bottom-0 left-0 w-full z-40 bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-lg flex justify-around items-center px-4 py-2 md:hidden">
         <button
           onClick={() => onSelectTab('dashboard')}
-          className={`flex flex-col items-center justify-center px-4 py-1.5 rounded-xl active:scale-95 transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl active:scale-95 transition-all cursor-pointer ${
             activeNavTab === 'dashboard'
               ? 'bg-indigo-50 text-indigo-600 font-semibold'
               : 'text-slate-500 hover:text-slate-900'
@@ -106,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         <button
           onClick={() => onSelectTab('converter')}
-          className={`flex flex-col items-center justify-center px-4 py-1.5 rounded-xl active:scale-95 transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl active:scale-95 transition-all cursor-pointer ${
             activeNavTab === 'converter'
               ? 'bg-indigo-50 text-indigo-600 font-semibold'
               : 'text-slate-500 hover:text-slate-900'
@@ -118,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         <button
           onClick={() => onSelectTab('alerts')}
-          className={`flex flex-col items-center justify-center px-4 py-1.5 rounded-xl active:scale-95 transition-all relative cursor-pointer ${
+          className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl active:scale-95 transition-all relative cursor-pointer ${
             activeNavTab === 'alerts'
               ? 'bg-indigo-50 text-indigo-600 font-semibold'
               : 'text-slate-500 hover:text-slate-900'
@@ -129,6 +141,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           {activeAlertsCount > 0 && (
             <span className="absolute top-1.5 right-3.5 w-2 h-2 rounded-full bg-rose-500" />
           )}
+        </button>
+
+        <button
+          onClick={() => onSelectTab('community')}
+          className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl active:scale-95 transition-all cursor-pointer ${
+            activeNavTab === 'community'
+              ? 'bg-indigo-50 text-indigo-600 font-semibold'
+              : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <MessageSquare className="w-5 h-5 mb-0.5" />
+          <span className="text-[11px]">Community</span>
         </button>
       </nav>
     </>

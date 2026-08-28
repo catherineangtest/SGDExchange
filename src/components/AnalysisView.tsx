@@ -11,6 +11,7 @@ import {
   ArrowLeftRight,
 } from 'lucide-react';
 import { CurrencyItem, PairDirection } from '../types';
+import { DisqusComments } from './DisqusComments';
 
 interface AnalysisViewProps {
   currency: CurrencyItem;
@@ -378,6 +379,14 @@ export const AnalysisView: React.FC<AnalysisViewProps> = ({
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Disqus Comments Section for this Currency Pair */}
+      <div className="mt-10">
+        <DisqusComments
+          identifier={`sgdexchange-analysis-${currency.code.toLowerCase()}`}
+          title={`${currency.code}/SGD Exchange Rate Discussion & Analysis`}
+        />
       </div>
     </div>
   );
