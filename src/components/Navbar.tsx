@@ -31,12 +31,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="w-8 h-8 bg-indigo-600 rounded-lg shadow-md shadow-indigo-200 flex items-center justify-center transition-transform group-hover:scale-105">
                 <div className="w-3.5 h-3.5 bg-white rounded-xs rotate-45"></div>
               </div>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-baseline">
                 <span className="text-lg font-bold tracking-tight text-slate-900">
                   SGD Exchange
-                </span>
-                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">
-                  LIVE
                 </span>
               </div>
             </button>

@@ -165,6 +165,21 @@ export default function App() {
     }
   };
 
+  const handleDeleteCurrency = (currencyCode: string) => {
+    setCurrencies((prev) => {
+      const updated = prev.filter((c) => c.code !== currencyCode);
+      if (selectedCurrency.code === currencyCode && updated.length > 0) {
+        setSelectedCurrency(updated[0]);
+      }
+      return updated;
+    });
+  };
+
+  const handleResetDefaultCurrencies = () => {
+    setCurrencies(INITIAL_CURRENCIES);
+    setSelectedCurrency(INITIAL_CURRENCIES[0]);
+  };
+
   const handleNavigateToAlerts = (
     currencyCode: string,
     targetRate?: number,
@@ -241,6 +256,8 @@ export default function App() {
             onOpenDataSource={() => setActiveInfoModal('datasource')}
             onSelectCurrency={handleSelectCurrencyForAnalysis}
             onOpenAddCurrency={handleOpenAddCurrency}
+            onDeleteCurrency={handleDeleteCurrency}
+            onResetDefaultCurrencies={handleResetDefaultCurrencies}
             onQuickAlert={(curr, direction) =>
               handleNavigateToAlerts(
                 curr.code,

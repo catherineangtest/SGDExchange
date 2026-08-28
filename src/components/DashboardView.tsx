@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Minus, Plus, ChevronRight, ArrowLeftRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Plus, ChevronRight, ArrowLeftRight, Trash2, RotateCcw } from 'lucide-react';
 import { CurrencyItem, PairDirection } from '../types';
 
 interface DashboardViewProps {
@@ -8,6 +8,8 @@ interface DashboardViewProps {
   onDirectionChange?: (direction: PairDirection) => void;
   onSelectCurrency: (currency: CurrencyItem, direction: PairDirection) => void;
   onOpenAddCurrency: () => void;
+  onDeleteCurrency?: (currencyCode: string) => void;
+  onResetDefaultCurrencies?: () => void;
   onQuickAlert: (currency: CurrencyItem, direction: PairDirection) => void;
   isLiveMasSync?: boolean;
   onOpenDataSource?: () => void;
@@ -19,6 +21,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onDirectionChange,
   onSelectCurrency,
   onOpenAddCurrency,
+  onDeleteCurrency,
+  onResetDefaultCurrencies,
   isLiveMasSync = false,
   onOpenDataSource,
 }) => {
@@ -136,9 +140,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <section className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <div className="flex items-center gap-2.5 mb-2">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-              Daily SGD Exchange Rates
+              End of Day SGD Exchange Rates
             </span>
             <button
               onClick={onOpenDataSource}
@@ -148,11 +152,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
               }`}
             >
-              <span>{isLiveMasSync ? 'MAS Live Synced' : 'MAS Official Data Feed'}</span>
+              <span>{isLiveMasSync ? 'MAS End of Period Synced' : 'MAS Official Data Feed'}</span>
             </button>
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
-            SGD Exchange <span className="text-indigo-600">v2.0</span>
+            SGD Exchange
           </h1>
           <p className="text-sm md:text-base text-slate-500 mt-1">
             {pairDirection === 'foreign_to_sgd'
@@ -241,21 +245,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                 </div>
 
-                <div
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 border ${
-                    isPositive
-                      ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                      : isNegative
-                      ? 'bg-rose-50 text-rose-600 border-rose-100'
-                      : 'bg-slate-50 text-slate-600 border-slate-200'
-                  }`}
-                >
-                  {isPositive && <TrendingUp className="w-3 h-3 stroke-[2.5]" />}
-                  {isNegative && <TrendingDown className="w-3 h-3 stroke-[2.5]" />}
-                  {isZero && <Minus className="w-3 h-3 stroke-[2.5]" />}
-                  <span>
-                    {isPositive ? `+${displayedChangePercent.toFixed(1)}%` : `${displayedChangePercent.toFixed(1)}%`}
-                  </span>
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 border ${
+                      isPositive
+                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                        : isNegative
+                        ? 'bg-rose-50 text-rose-600 border-rose-100'
+                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    {isPositive && <TrendingUp className="w-3 h-3 stroke-[2.5]" />}
+                    {isNegative && <TrendingDown className="w-3 h-3 stroke-[2.5]" />}
+                    {isZero && <Minus className="w-3 h-3 stroke-[2.5]" />}
+                    <span>
+                      {isPositive ? `+${displayedChangePercent.toFixed(1)}%` : `${displayedChangePercent.toFixed(1)}%`}
+                    </span>
+                  </div>
+
+                  {/* Delete Button */}
+                  {onDeleteCurrency && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteCurrency(currency.code);
+                      }}
+                      title={`Remove ${currency.code} from dashboard`}
+                      aria-label={`Remove ${currency.code} from dashboard`}
+                      className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg opacity-80 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -288,6 +310,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <span className="text-xs text-slate-400">CAD, CHF, HKD, NZD & more</span>
         </button>
       </section>
+
+      {/* Empty State / Reset Option */}
+      {currencies.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs max-w-md mx-auto mb-12">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4">
+            <Plus className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 mb-1">No Currencies on Dashboard</h3>
+          <p className="text-xs text-slate-500 mb-6">
+            You have removed all tracked currencies. Add new ones or restore the default major pairs.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={onOpenAddCurrency}
+              className="px-4 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-colors cursor-pointer shadow-xs"
+            >
+              Add Currency
+            </button>
+            {onResetDefaultCurrencies && (
+              <button
+                onClick={onResetDefaultCurrencies}
+                className="px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Restore Defaults
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
